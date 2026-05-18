@@ -521,11 +521,16 @@
         }
         
         .modal-desc {
-            color: #666;
+            color: #444;
             margin-bottom: 30px;
-            line-height: 1.8;
-            white-space: pre-wrap;
+            line-height: 2;
             font-size: 15px;
+            letter-spacing: 0.02em;
+        }
+        
+        .modal-desc p {
+            margin-bottom: 12px;
+            text-indent: 0;
         }
         
         .modal-info {
@@ -803,6 +808,16 @@
             { bg: ['#EC4899', '#BE185D'], text: '#FFFFFF', accent: '#FBCFE8' },
         ];
         
+        function formatDesc(desc) {
+            if (!desc) return '暂无描述';
+            // 将换行符转为段落，增加可读性
+            return desc
+                .replace(/\n\n+/g, '</p><p style="margin-top:16px;">')
+                .replace(/\n/g, '<br>')
+                .replace(/^/, '<p>')
+                .replace(/$/, '</p>');
+        }
+        
         function generateTextCover(title, noteType, index) {
             const canvas = document.createElement('canvas');
             canvas.width = 600;
@@ -944,7 +959,7 @@
                     <span>·</span>
                     <span>${note.note_type}</span>
                 </div>
-                <div class="modal-desc">${note.desc || '暂无描述'}</div>
+                <div class="modal-desc">${formatDesc(note.desc)}</div>
                 ${tagsHtml}
                 <div class="modal-info">
                     <div class="info-item">
