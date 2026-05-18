@@ -917,67 +917,52 @@
             
             let mediaHtml = '';
             
-            // 显示视频封面
-            if (note.video_cover) {
-                mediaHtml += `<img src="${note.video_cover}" style="width: 100%; border-radius: 12px; margin-bottom: 20px;" onerror="this.style.display='none'">`;
-            }
+            // 用 Canvas 生成的封面图（与卡片同样风格）
+            const coverDataUrl = generateTextCover(note.title || '无标题', note.note_type, parseInt(note.note_id?.slice(-2), 16) || 0);
+            mediaHtml += `<img src="${coverDataUrl}" style="width: 100%; border-radius: 12px; margin-bottom: 24px;">`;
             
-            // 显示图片
-            if (note.image_list) {
+            // 解析标签
+            let tagsHtml = '';
+            if (note.tags && note.tags !== 'None' && note.tags !== '[]') {
                 try {
-                    const images = JSON.parse(note.image_list.replace(/'/g, '"'));
-                    if (images && images.length > 0) {
-                        mediaHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;">';
-                        images.forEach(img => {
-                            mediaHtml += `<img src="${img}" style="width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open('${img}', '_blank')" onerror="this.style.display='none'">`;
-                        });
-                        mediaHtml += '</div>';
+                    const tagList = JSON.parse(note.tags.replace(/'/g, '"'));
+                    if (tagList.length > 0) {
+                        tagsHtml = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0;">' +
+                            tagList.map(t => `<span style="padding: 6px 14px; background: #F0F9FF; color: #0369A1; border-radius: 16px; font-size: 13px;">#${t}</span>`).join('') +
+                            '</div>';
                     }
-                } catch(e) {
-                    console.error('解析图片列表失败:', e);
-                }
+                } catch(e) {}
             }
             
             modalBody.innerHTML = `
-                <h2 class="modal-title">${note.title || '无标题'}</h2>
-                <div class="modal-desc">${note.desc || '暂无描述'}</div>
                 ${mediaHtml}
+                <h2 class="modal-title">${note.title || '无标题'}</h2>
+                <div style="display: flex; gap: 20px; color: #999; font-size: 13px; margin-bottom: 24px;">
+                    <span>${note.upload_time || '未知时间'}</span>
+                    <span>·</span>
+                    <span>${note.ip_location || '未知地区'}</span>
+                    <span>·</span>
+                    <span>${note.note_type}</span>
+                </div>
+                <div class="modal-desc">${note.desc || '暂无描述'}</div>
+                ${tagsHtml}
                 <div class="modal-info">
                     <div class="info-item">
-                        <div class="info-label">笔记类型</div>
-                        <div class="info-value">${note.note_type}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">发布时间</div>
-                        <div class="info-value">${note.upload_time || '未知'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">点赞数</div>
+                        <div class="info-label">点赞</div>
                         <div class="info-value">${note.liked_count || 0}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">收藏数</div>
+                        <div class="info-label">收藏</div>
                         <div class="info-value">${note.collected_count || 0}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">评论数</div>
+                        <div class="info-label">评论</div>
                         <div class="info-value">${note.comment_count || 0}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">分享数</div>
+                        <div class="info-label">分享</div>
                         <div class="info-value">${note.share_count || 0}</div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">IP归属地</div>
-                        <div class="info-value">${note.ip_location || '未知'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">标签</div>
-                        <div class="info-value" style="font-size: 14px;">${note.tags || '无'}</div>
-                    </div>
-                </div>
-                <div style="text-align: center;">
-                    <a href="${note.note_url}" target="_blank" class="link-btn"><span>查看原文</span></a>
                 </div>
             `;
             
